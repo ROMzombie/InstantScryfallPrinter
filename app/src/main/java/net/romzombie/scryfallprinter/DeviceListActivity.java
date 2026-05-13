@@ -1,4 +1,4 @@
-package net.romzombie.momir;
+package net.romzombie.scryfallprinter;
 
 /**
  * Created by sanxy on 6/02/2020.

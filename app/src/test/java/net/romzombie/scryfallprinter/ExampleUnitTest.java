@@ -1,4 +1,4 @@
-package net.romzombie.momir;
+package net.romzombie.scryfallprinter;
 
 import org.junit.Test;
 

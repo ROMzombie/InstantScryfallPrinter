@@ -1,6 +1,6 @@
-# InstantMomir
+# InstantScryfallPrinter
 
-A simple Android application for playing the Momir format in Magic: the Gathering by printing to Bluetooth thermal printers.  Connect to any compatible Bluetooth thermal printer and hit a numbered button on your display to look up a random matching creature card on scryfall and send it to the printer.
+A simple Android application for playing the Scryfall Printer format in Magic: the Gathering by printing to Bluetooth thermal printers.  Connect to any compatible Bluetooth thermal printer and hit a numbered button on your display to look up a random matching creature card on scryfall and send it to the printer.
 
 ## Features
 
@@ -18,16 +18,16 @@ A simple Android application for playing the Momir format in Magic: the Gatherin
 ## Installing from Google Play
 
 Currently in limited testing, you can access the tester group here:
-[Google Play Store](https://play.google.com/store/apps/details?id=net.romzombie.momir) or [Google Play Beta](https://play.google.com/apps/testing/net.romzombie.momir)
+[Google Play Store](https://play.google.com/store/apps/details?id=net.romzombie.scryfallprinter) or [Google Play Beta](https://play.google.com/apps/testing/net.romzombie.scryfallprinter)
 
-## Sideloading InstantMomir
+## Sideloading InstantScryfallPrinter
 
-You can install the app directly from the [latest release](https://github.com/ROMzombie/InstantMomir/releases/latest) without needing Android Studio or any development tools.
+You can install the app directly from the [latest release](https://github.com/ROMzombie/InstantScryfallPrinter/releases/latest) without needing Android Studio or any development tools.
 
 ### Download the APK
 
-1. On your Android device, open **Chrome** (or any browser) and go to the [Releases page](https://github.com/ROMzombie/InstantMomir/releases/latest).
-2. Under **Assets**, tap the file named `InstantMomir-v*.apk` to download it.
+1. On your Android device, open **Chrome** (or any browser) and go to the [Releases page](https://github.com/ROMzombie/InstantScryfallPrinter/releases/latest).
+2. Under **Assets**, tap the file named `InstantScryfallPrinter-v*.apk` to download it.
 
 ### Enable "Install Unknown Apps"
 
@@ -43,7 +43,7 @@ Android blocks APK installs from outside the Play Store by default. You need to 
 
 1. Open your **Downloads** folder (or tap the download notification).
 2. Tap the APK file and press **Install** when prompted.
-3. Once installed, open **Momir** from your app drawer.
+3. Once installed, open **Scryfall Printer** from your app drawer.
 
 > **Security tip:** After installing, go back to **Settings → Apps → Special app access → Install unknown apps** and toggle the permission back to **OFF** for the app you enabled it on.
 
@@ -65,13 +65,13 @@ Android blocks APK installs from outside the Play Store by default. You need to 
 ### Cloning the Repository
 
 ```bash
-git clone https://github.com/ROMzombie/InstantMomir.git
-cd InstantMomir
+git clone https://github.com/ROMzombie/InstantScryfallPrinter.git
+cd InstantScryfallPrinter
 ```
 
 ### Opening in Android Studio
 
-1. Launch Android Studio → **File → Open** → select the `InstantMomir` folder.
+1. Launch Android Studio → **File → Open** → select the `InstantScryfallPrinter` folder.
 2. Android Studio will detect the Gradle project and prompt you to sync — click **Sync Now**.
 3. Install any missing SDK components listed in the SDK Manager if prompted.
 
@@ -90,7 +90,7 @@ cd InstantMomir
 
 ## Testing
 
-Instant Momir uses **JUnit 4**, **Robolectric**, and **Mockito** for its testing framework to ensure code quality and stability.
+Instant Scryfall Printer uses **JUnit 4**, **Robolectric**, and **Mockito** for its testing framework to ensure code quality and stability.
 
 ### Running Tests Locally
 
@@ -129,7 +129,7 @@ The `master` branch has branch protection rules enabled on GitHub. The `Run Unit
 
 ### Opening the Project
 
-1. Open the `InstantMomir` folder in VS Code.
+1. Open the `InstantScryfallPrinter` folder in VS Code.
 2. Antigravity will detect the Gradle project structure and provide code navigation, refactoring, and build assistance.
 3. For UI editing and emulator management, keep Android Studio open alongside VS Code.
 

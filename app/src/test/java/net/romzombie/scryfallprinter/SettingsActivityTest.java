@@ -1,4 +1,4 @@
-package net.romzombie.momir;
+package net.romzombie.scryfallprinter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -29,7 +29,7 @@ public class SettingsActivityTest {
 
     @Test
     public void testInitialState_DefaultPrefs() {
-        SharedPreferences prefs = activity.getSharedPreferences("MomirPrefs", Context.MODE_PRIVATE);
+        SharedPreferences prefs = activity.getSharedPreferences("ScryfallPrinterPrefs", Context.MODE_PRIVATE);
         // By default, text format should be selected
         assertEquals("TextFormat", prefs.getString("OutputFormatStrategy", "TextFormat"));
 
@@ -49,7 +49,7 @@ public class SettingsActivityTest {
         rbImageFormat.setChecked(true);
         btnSave.performClick();
 
-        SharedPreferences prefs = activity.getSharedPreferences("MomirPrefs", Context.MODE_PRIVATE);
+        SharedPreferences prefs = activity.getSharedPreferences("ScryfallPrinterPrefs", Context.MODE_PRIVATE);
         assertEquals("ImageFormat", prefs.getString("OutputFormatStrategy", ""));
         assertTrue(activity.isFinishing());
     }

@@ -25,7 +25,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Instant Momir"
+                android:text="Instant Scryfall Printer"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="#000000"
@@ -51,15 +51,27 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <GridLayout
-            android:id="@+id/grid_mana_values"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
-            android:columnCount="3"
-            android:rowCount="5"
-            android:background="#E0E0E0">
-        </GridLayout>
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:orientation="vertical">
+
+            <AutoCompleteTextView
+                android:id="@+id/card_search_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search for a card..."
+                android:textSize="20sp"
+                android:padding="16dp"
+                android:background="#FFFFFF"
+                android:textColor="#000000"
+                android:textColorHint="#888888"
+                android:completionThreshold="2"
+                android:dropDownHeight="wrap_content"
+                android:elevation="4dp"/>
+                
+        </LinearLayout>
 
         <Space
             android:layout_width="match_parent"

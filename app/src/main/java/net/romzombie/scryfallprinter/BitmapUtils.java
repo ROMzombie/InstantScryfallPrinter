@@ -1,4 +1,4 @@
-package net.romzombie.momir;
+package net.romzombie.scryfallprinter;
 
 import android.content.Context;
 import android.graphics.Bitmap;

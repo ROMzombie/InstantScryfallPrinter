@@ -1,4 +1,4 @@
-package net.romzombie.momir;
+package net.romzombie.scryfallprinter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -50,7 +50,7 @@ public class ImageFormatStrategy implements OutputFormatStrategy {
 
         URL url = new URL(imageUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("User-Agent", "InstantMomir/1.0");
+        conn.setRequestProperty("User-Agent", "InstantScryfallPrinter/1.0");
         conn.setRequestProperty("Accept", "image/jpeg, image/png");
         conn.setConnectTimeout(5000);
         conn.setReadTimeout(10000);

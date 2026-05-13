@@ -1,4 +1,4 @@
-package net.romzombie.momir;
+package net.romzombie.scryfallprinter;
 
 import android.app.Activity;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,8 +17,9 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -66,7 +67,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     TextView stat;
     LinearLayout layout;
-    GridLayout gridManaValues;
+    AutoCompleteTextView cardSearchInput;
+    ArrayAdapter<String> searchAdapter;
+    private Handler searchHandler = new Handler();
+    private Runnable searchRunnable;
 
     private void updateUIForDisconnect() {
         stat.setText("Disconnected");
@@ -78,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences prefs = getSharedPreferences("MomirPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("ScryfallPrinterPrefs", MODE_PRIVATE);
         String savedTheme = prefs.getString("ThemeMode", "system");
         if ("light".equals(savedTheme)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -148,36 +152,66 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             });
         }
 
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         layout = findViewById(R.id.layout);
-        gridManaValues = findViewById(R.id.grid_mana_values);
+        
+        cardSearchInput = findViewById(R.id.card_search_input);
+        searchAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, new java.util.ArrayList<String>()) {
+            @Override
+            public android.widget.Filter getFilter() {
+                return new android.widget.Filter() {
+                    @Override
+                    protected FilterResults performFiltering(CharSequence constraint) {
+                        return new FilterResults();
+                    }
+                    @Override
+                    protected void publishResults(CharSequence constraint, FilterResults results) {
+                        if (getCount() > 0) {
+                            notifyDataSetChanged();
+                        } else {
+                            notifyDataSetInvalidated();
+                        }
+                    }
+                };
+            }
+        };
+        cardSearchInput.setAdapter(searchAdapter);
+        cardSearchInput.requestFocus();
 
-        // Add 15 buttons programmatically to the GridLayout
-        for (int i = 1; i <= 15; i++) {
-            final int manaValue = i;
-            Button button = new Button(this);
-            button.setText(String.valueOf(manaValue));
-            button.setTextSize(32);
-            button.setBackgroundColor(Color.LTGRAY);
-            button.setTextColor(Color.BLACK);
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = 0;
-            params.height = 0;
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            params.setMargins(16, 16, 16, 16);
-            button.setLayoutParams(params);
+        cardSearchInput.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    fetchAndPrintCard(manaValue, (Button) v);
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(final android.text.Editable s) {
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
                 }
-            });
-            gridManaValues.addView(button);
-        }
+                final String query = s.toString().trim();
+                if (query.length() < 2) return;
+
+                searchRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        fetchAutocomplete(query);
+                    }
+                };
+                searchHandler.postDelayed(searchRunnable, 500);
+            }
+        });
+
+        cardSearchInput.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                String cardName = searchAdapter.getItem(position);
+                fetchAndPrintCardByName(cardName);
+            }
+        });
 
         mScan = findViewById(R.id.Scan);
         mScan.setOnClickListener(new View.OnClickListener() {
@@ -216,21 +250,16 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
     }
 
-    private void fetchAndPrintCard(final int manaValue, final Button clickedButton) {
-        final boolean isConnected = mBluetoothSocket != null && mBluetoothSocket.isConnected();
-
-        clickedButton.setBackgroundColor(Color.YELLOW);
-
+    private void fetchAutocomplete(final String query) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 HttpURLConnection conn = null;
                 try {
-                    URL url = new URL(
-                            "https://api.scryfall.com/cards/random?q=type%3Acreature%20game%3Apaper%20legal%3Dvintage%20cmc%3D"
-                                    + manaValue);
+                    String encodedQuery = java.net.URLEncoder.encode(query, "UTF-8");
+                    URL url = new URL("https://api.scryfall.com/cards/autocomplete?q=" + encodedQuery);
                     conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("User-Agent", "InstantMomir/1.0");
+                    conn.setRequestProperty("User-Agent", "InstantScryfallPrinter/1.0");
                     conn.setRequestProperty("Accept", "application/json");
                     conn.setRequestMethod("GET");
                     conn.setConnectTimeout(5000);
@@ -247,118 +276,75 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                         }
                         in.close();
 
-                        JSONObject cardData = new JSONObject(response.toString());
-                        final String name = cardData.getString("name");
-
-                        if (isConnected) {
-                            SharedPreferences prefs = getSharedPreferences("MomirPrefs", MODE_PRIVATE);
-                            String strategyName = prefs.getString("OutputFormatStrategy", "TextFormat");
-                            OutputFormatStrategy formatStrategy;
-                            if ("ImageFormat".equals(strategyName)) {
-                                formatStrategy = new ImageFormatStrategy();
-                            } else {
-                                formatStrategy = new TextFormatStrategy();
-                            }
-
-                            byte[] monochromeData = formatStrategy.format(MainActivity.this, cardData);
-                            final boolean success = sendPrintJob(monochromeData, formatStrategy.getWidth(),
-                                    formatStrategy.getHeight());
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (success) {
-                                        clickedButton.setBackgroundColor(Color.GREEN);
-                                        Toast.makeText(MainActivity.this, "Successfully printed " + name,
-                                                Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        clickedButton.setBackgroundColor(Color.RED);
-                                        Toast.makeText(MainActivity.this, "Failed to send data to printer",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                    resetButtonColor(clickedButton);
-                                }
-                            });
-                        } else {
-                            String imageUrl = null;
-                            if (cardData.has("image_uris")) {
-                                JSONObject imageUris = cardData.getJSONObject("image_uris");
-                                if (imageUris.has("normal")) {
-                                    imageUrl = imageUris.getString("normal");
-                                } else if (imageUris.has("large")) {
-                                    imageUrl = imageUris.getString("large");
-                                }
-                            }
-
-                            if (imageUrl == null && cardData.has("card_faces")) {
-                                JSONObject face = cardData.getJSONArray("card_faces").getJSONObject(0);
-                                if (face.has("image_uris")) {
-                                    JSONObject imageUris = face.getJSONObject("image_uris");
-                                    if (imageUris.has("normal")) {
-                                        imageUrl = imageUris.getString("normal");
-                                    } else if (imageUris.has("large")) {
-                                        imageUrl = imageUris.getString("large");
-                                    }
-                                }
-                            }
-
-                            if (imageUrl != null) {
-                                URL imgUrl = new URL(imageUrl);
-                                HttpURLConnection imgConn = (HttpURLConnection) imgUrl.openConnection();
-                                imgConn.setRequestProperty("User-Agent", "InstantMomir/1.0");
-                                imgConn.setRequestProperty("Accept", "image/jpeg, image/png");
-                                imgConn.setConnectTimeout(5000);
-                                imgConn.setReadTimeout(10000);
-
-                                InputStream imgIn = imgConn.getInputStream();
-                                final android.graphics.Bitmap bitmap = android.graphics.BitmapFactory
-                                        .decodeStream(imgIn);
-                                imgConn.disconnect();
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        clickedButton.setBackgroundColor(Color.GREEN);
-                                        android.app.Dialog dialog = new android.app.Dialog(MainActivity.this,
-                                                android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-                                        android.widget.ImageView imageView = new android.widget.ImageView(
-                                                MainActivity.this);
-                                        imageView.setImageBitmap(bitmap);
-                                        imageView.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-                                        imageView.setOnClickListener(new android.view.View.OnClickListener() {
-                                            @Override
-                                            public void onClick(android.view.View v) {
-                                                dialog.dismiss();
-                                            }
-                                        });
-                                        dialog.setContentView(imageView);
-                                        dialog.show();
-                                        resetButtonColor(clickedButton);
-                                    }
-                                });
-                            } else {
-                                throw new Exception("No suitable image found for card.");
-                            }
+                        JSONObject json = new JSONObject(response.toString());
+                        org.json.JSONArray data = json.getJSONArray("data");
+                        final java.util.ArrayList<String> names = new java.util.ArrayList<>();
+                        for (int i = 0; i < data.length(); i++) {
+                            names.add(data.getString(i));
                         }
-                    } else if (responseCode == 404) {
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                clickedButton.setBackgroundColor(Color.RED);
-                                Toast.makeText(MainActivity.this, "No creature found with MV " + manaValue,
-                                        Toast.LENGTH_SHORT).show();
-                                resetButtonColor(clickedButton);
+                                searchAdapter.clear();
+                                searchAdapter.addAll(names);
+                                searchAdapter.notifyDataSetChanged();
+                                if (!names.isEmpty() && cardSearchInput.hasFocus()) {
+                                    cardSearchInput.showDropDown();
+                                }
                             }
                         });
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Autocomplete fetch error", e);
+                } finally {
+                    if (conn != null) conn.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private void fetchAndPrintCardByName(final String cardName) {
+        final boolean isConnected = mBluetoothSocket != null && mBluetoothSocket.isConnected();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cardSearchInput.setEnabled(false);
+            }
+        });
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection conn = null;
+                try {
+                    String encodedName = java.net.URLEncoder.encode(cardName, "UTF-8");
+                    URL url = new URL("https://api.scryfall.com/cards/named?exact=" + encodedName);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("User-Agent", "InstantScryfallPrinter/1.0");
+                    conn.setRequestProperty("Accept", "application/json");
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(5000);
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        InputStream in = new BufferedInputStream(conn.getInputStream());
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            response.append(line);
+                        }
+                        in.close();
+
+                        final JSONObject cardData = new JSONObject(response.toString());
+                        printCard(cardData, isConnected);
                     } else {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                clickedButton.setBackgroundColor(Color.RED);
-                                Toast.makeText(MainActivity.this,
-                                        "Failed to fetch card metadata (HTTP " + responseCode + ")", Toast.LENGTH_SHORT)
-                                        .show();
-                                resetButtonColor(clickedButton);
+                                Toast.makeText(MainActivity.this, "Card not found.", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -367,18 +353,110 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            clickedButton.setBackgroundColor(Color.RED);
                             Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            resetButtonColor(clickedButton);
                         }
                     });
                 } finally {
-                    if (conn != null) {
-                        conn.disconnect();
-                    }
+                    if (conn != null) conn.disconnect();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            cardSearchInput.setEnabled(true);
+                            cardSearchInput.setText("");
+                        }
+                    });
                 }
             }
         }).start();
+    }
+
+    private void printCard(final JSONObject cardData, boolean isConnected) throws Exception {
+        final String name = cardData.getString("name");
+        if (isConnected) {
+            SharedPreferences prefs = getSharedPreferences("ScryfallPrinterPrefs", MODE_PRIVATE);
+            String strategyName = prefs.getString("OutputFormatStrategy", "TextFormat");
+            OutputFormatStrategy formatStrategy;
+            if ("ImageFormat".equals(strategyName)) {
+                formatStrategy = new ImageFormatStrategy();
+            } else {
+                formatStrategy = new TextFormatStrategy();
+            }
+
+            byte[] monochromeData = formatStrategy.format(MainActivity.this, cardData);
+            final boolean success = sendPrintJob(monochromeData, formatStrategy.getWidth(),
+                    formatStrategy.getHeight());
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (success) {
+                        Toast.makeText(MainActivity.this, "Successfully printed " + name,
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Failed to send data to printer",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else {
+            String imageUrl = null;
+            if (cardData.has("image_uris")) {
+                JSONObject imageUris = cardData.getJSONObject("image_uris");
+                if (imageUris.has("normal")) {
+                    imageUrl = imageUris.getString("normal");
+                } else if (imageUris.has("large")) {
+                    imageUrl = imageUris.getString("large");
+                }
+            }
+
+            if (imageUrl == null && cardData.has("card_faces")) {
+                JSONObject face = cardData.getJSONArray("card_faces").getJSONObject(0);
+                if (face.has("image_uris")) {
+                    JSONObject imageUris = face.getJSONObject("image_uris");
+                    if (imageUris.has("normal")) {
+                        imageUrl = imageUris.getString("normal");
+                    } else if (imageUris.has("large")) {
+                        imageUrl = imageUris.getString("large");
+                    }
+                }
+            }
+
+            if (imageUrl != null) {
+                URL imgUrl = new URL(imageUrl);
+                HttpURLConnection imgConn = (HttpURLConnection) imgUrl.openConnection();
+                imgConn.setRequestProperty("User-Agent", "InstantScryfallPrinter/1.0");
+                imgConn.setRequestProperty("Accept", "image/jpeg, image/png");
+                imgConn.setConnectTimeout(5000);
+                imgConn.setReadTimeout(10000);
+
+                InputStream imgIn = imgConn.getInputStream();
+                final android.graphics.Bitmap bitmap = android.graphics.BitmapFactory
+                        .decodeStream(imgIn);
+                imgConn.disconnect();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        android.app.Dialog dialog = new android.app.Dialog(MainActivity.this,
+                                android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+                        android.widget.ImageView imageView = new android.widget.ImageView(
+                                MainActivity.this);
+                        imageView.setImageBitmap(bitmap);
+                        imageView.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+                        imageView.setOnClickListener(new android.view.View.OnClickListener() {
+                            @Override
+                            public void onClick(android.view.View v) {
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.setContentView(imageView);
+                        dialog.show();
+                    }
+                });
+            } else {
+                throw new Exception("No suitable image found for card.");
+            }
+        }
     }
 
     private boolean sendPrintJob(byte[] monoData, int widthPx, int heightPx) {
@@ -402,15 +480,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             Log.e(TAG, "Print Error", e);
             return false;
         }
-    }
-
-    private void resetButtonColor(final Button button) {
-        button.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                button.setBackgroundColor(Color.LTGRAY);
-            }
-        }, 1500);
     }
 
     @Override
@@ -477,7 +546,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     private void connectOrShowDeviceList() {
-        SharedPreferences prefs = getSharedPreferences("MomirPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("ScryfallPrinterPrefs", MODE_PRIVATE);
         String savedMac = prefs.getString("LastPrinterMac", null);
         if (savedMac != null) {
             isAutoReconnecting = true;
@@ -542,7 +611,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 mScan.setText("Disconnect");
                 mScan.setBackgroundColor(Color.rgb(97, 170, 74));
                 if (mBluetoothDevice != null) {
-                    SharedPreferences prefs = getSharedPreferences("MomirPrefs", MODE_PRIVATE);
+                    SharedPreferences prefs = getSharedPreferences("ScryfallPrinterPrefs", MODE_PRIVATE);
                     prefs.edit().putString("LastPrinterMac", mBluetoothDevice.getAddress()).apply();
                 }
                 // Select printer communication strategy based on device name

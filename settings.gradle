@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "InstantMomir"
+rootProject.name = "InstantScryfallPrinter"
 include ':app'

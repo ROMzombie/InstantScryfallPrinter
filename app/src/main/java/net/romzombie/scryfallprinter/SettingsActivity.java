@@ -1,4 +1,4 @@
-package net.romzombie.momir;
+package net.romzombie.scryfallprinter;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -37,7 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
         rbImageFormat = findViewById(R.id.rb_image_format);
         btnSave = findViewById(R.id.btn_save_settings);
 
-        SharedPreferences prefs = getSharedPreferences("MomirPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("ScryfallPrinterPrefs", MODE_PRIVATE);
         
         String savedTheme = prefs.getString("ThemeMode", "system");
         if ("light".equals(savedTheme)) {
@@ -75,7 +75,7 @@ public class SettingsActivity extends AppCompatActivity {
                     selectedStrategy = "ImageFormat";
                 }
 
-                SharedPreferences.Editor editor = getSharedPreferences("MomirPrefs", MODE_PRIVATE).edit();
+                SharedPreferences.Editor editor = getSharedPreferences("ScryfallPrinterPrefs", MODE_PRIVATE).edit();
                 editor.putString("ThemeMode", selectedTheme);
                 editor.putString("OutputFormatStrategy", selectedStrategy);
                 editor.apply();

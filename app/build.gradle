@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'net.romzombie.momir'
+    namespace 'net.romzombie.scryfallprinter'
     compileSdk 35
 
     defaultConfig {
-        applicationId "net.romzombie.momir"
+        applicationId "net.romzombie.scryfallprinter"
         minSdk 21
         targetSdk 35
         versionCode project.hasProperty('versionCodeOverride') ? project.versionCodeOverride.toInteger() : 1

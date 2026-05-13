@@ -44,8 +44,8 @@ foreach ($res in $resolutions) {
     # Wait for UI to rescale and settle
     Start-Sleep -Seconds 2
     
-    Write-Host "Launching Instant Momir app and waiting for draw..."
-    adb shell am start -W -n net.romzombie.momir/.MainActivity
+    Write-Host "Launching Instant Scryfall Printer app and waiting for draw..."
+    adb shell am start -W -n net.romzombie.scryfallprinter/.MainActivity
     Start-Sleep -Seconds 2
     
     $outName = "$($res.name)_main.png"
