@@ -189,10 +189,10 @@ The `master` branch has branch protection rules enabled on GitHub. The `Run Unit
 
 ```powershell
 # View live logcat output (filter to your app)
-adb logcat --pid=$(adb shell pidof -s com.sanxynet.bluetoothprinter)
+adb logcat --pid=$(adb shell pidof -s net.romzombie.scryfallprinter)
 
 # Uninstall the app
-adb uninstall com.sanxynet.bluetoothprinter
+adb uninstall net.romzombie.scryfallprinter
 
 # Reboot the device
 adb reboot

@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     LinearLayout layout;
     AutoCompleteTextView cardSearchInput;
     ArrayAdapter<String> searchAdapter;
+    android.widget.ProgressBar searchProgress;
     private Handler searchHandler = new Handler();
     private Runnable searchRunnable;
 
@@ -158,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         layout = findViewById(R.id.layout);
         
         cardSearchInput = findViewById(R.id.card_search_input);
+        searchProgress = findViewById(R.id.search_progress);
         searchAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, new java.util.ArrayList<String>()) {
             @Override
             public android.widget.Filter getFilter() {
@@ -198,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 searchRunnable = new Runnable() {
                     @Override
                     public void run() {
+                        searchProgress.setVisibility(View.VISIBLE);
                         fetchAutocomplete(query);
                     }
                 };
@@ -299,6 +302,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                     Log.e(TAG, "Autocomplete fetch error", e);
                 } finally {
                     if (conn != null) conn.disconnect();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            searchProgress.setVisibility(View.GONE);
+                        }
+                    });
                 }
             }
         }).start();
@@ -310,6 +319,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @Override
             public void run() {
                 cardSearchInput.setEnabled(false);
+                searchProgress.setVisibility(View.VISIBLE);
             }
         });
 
@@ -363,6 +373,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                         public void run() {
                             cardSearchInput.setEnabled(true);
                             cardSearchInput.setText("");
+                            searchProgress.setVisibility(View.GONE);
                         }
                     });
                 }
