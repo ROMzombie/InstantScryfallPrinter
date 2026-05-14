@@ -41,10 +41,19 @@ foreach ($res in $resolutions) {
     adb shell wm density $($res.density)
     
     # Wait for UI to rescale and settle
+    Start-Sleep -Seconds 10
+    
+    # Dismiss any "System UI isn't responding" dialogs
+    adb shell settings put global hide_error_dialogs 1
+    adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
+    adb shell input keyevent KEYCODE_DPAD_DOWN
+    adb shell input keyevent KEYCODE_DPAD_RIGHT
+    adb shell input keyevent KEYCODE_ENTER
+    adb shell input keyevent KEYCODE_BACK
     Start-Sleep -Seconds 2
     
     Write-Host "Launching Instant Scryfall Printer app and waiting for draw..."
-    adb shell am start -W -n net.romzombie.scryfallprinter/.MainActivity
+    adb shell am start -S -W -n net.romzombie.scryfallprinter/.MainActivity
     Start-Sleep -Seconds 2
     
     $outName = "$($res.name)_main.png"
