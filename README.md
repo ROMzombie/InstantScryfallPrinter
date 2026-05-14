@@ -1,24 +1,19 @@
 # InstantScryfallPrinter
 
-A simple Android application for playing the Scryfall Printer format in Magic: the Gathering by printing to Bluetooth thermal printers.  Connect to any compatible Bluetooth thermal printer and hit a numbered button on your display to look up a random matching creature card on scryfall and send it to the printer.
+A simple Android application for playing the Scryfall Printer format in Magic: the Gathering by printing to Bluetooth thermal printers.  Connect to any compatible Bluetooth thermal printer and use the autocomplete search to find a specific creature card on Scryfall and send it to the printer.
 
 ## Features
 
 - Scan for and connect to paired Bluetooth thermal printers
-- Works currently with standard themral printers
+- Works currently with standard thermal printers
 - - Includes support for the cheap [PRT](https://www.amazon.com/dp/B0DYN9XLTQ)
-- Quick access to random creature cards by mana cost
+- Quick access to creature cards via an autocomplete search
 
 ## Screenshots
 
 | App Interface | Printed Output |
 |:---:|:---:|
 | ![App Interface](screenshots/phone_main.png) | ![Printed Card Output](screenshots/output-01.jpg) |
-
-## Installing from Google Play
-
-Currently in limited testing, you can access the tester group here:
-[Google Play Store](https://play.google.com/store/apps/details?id=net.romzombie.scryfallprinter) or [Google Play Beta](https://play.google.com/apps/testing/net.romzombie.scryfallprinter)
 
 ## Sideloading InstantScryfallPrinter
 

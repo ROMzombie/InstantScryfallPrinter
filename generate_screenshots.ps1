@@ -28,8 +28,7 @@ Write-Host "Original Density Output: $origDensityOutput.Trim()"
 if ($origSizeOutput -match "Physical size:\s*(\d+x\d+)") { $origSize = $matches[1] } else { $origSize = "reset" }
 if ($origDensityOutput -match "Physical density:\s*(\d+)") { $origDensity = $matches[1] } else { $origDensity = "reset" }
 
-Write-Host "Installing the debug APK..."
-adb install -r -t app\build\outputs\apk\debug\app-debug.apk
+
 
 Write-Host "Waking up emulator and dismissing lock screen..."
 adb shell input keyevent KEYCODE_WAKEUP
